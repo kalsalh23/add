@@ -17,8 +17,8 @@
 | 👨‍⚕️ الاسم | `name` |
 | 🩺 الاختصاص | `specialty` |
 | 📍 الموقع | `location` |
-| 📅 أيام الدوام | `work_days` |
-| 🕐 أوقات الدوام | `work_hours` |
+| 📅 أيام الدوام | `work_days` (مصفوفة، اختيار الأيام من القائمة) |
+| 🕐 أوقات الدوام | `work_times` |
 | 🚫 يوم العطلة | `day_off` |
 | 📞 رقم التواصل | `phone` |
 
@@ -26,8 +26,8 @@
 
 ## قاعدة البيانات (Supabase)
 
-- الجدول: `public.doctors` (id, name, specialty, location, work_days, work_hours, day_off, phone, created_at)
-- مفعّل **Row Level Security** مع سياسة واحدة تسمح **بالإضافة (insert) فقط** للدور `anon` — لا قراءة ولا حذف من جهة العميل.
+- الجدول: `public.doctors` (id, name, specialty, location, work_days[], work_times, day_off, phone, created_at)
+- مفعّل **Row Level Security** مع سياسة تسمح **بالإضافة (insert)** للدور `anon`.
 - رابط المشروع ومفتاح `anon` موجودان داخل `index.html`؛ وهما مصمّمان للاستخدام العلني من جهة العميل ولا يكشفان بيانات الجدول.
 
 ## بنية المشروع
