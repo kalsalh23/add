@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="منصة أطباء طيبة الأمام — جمع بيانات الأطباء">
+  <title>أطباء طيبة الأمام</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
+    :root { --primary: #0d9488; --primary-dark: #0f766e; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #134e4a, #0f766e 60%, #115e59);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 560px;
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+    }
+    header { text-align: center; margin-bottom: 28px; }
+    .logo { font-size: 46px; }
+    h1 { color: var(--primary-dark); font-size: 27px; margin-top: 10px; }
+    .subtitle { color: #64748b; font-size: 14px; margin-top: 6px; }
+    .field { margin-bottom: 16px; }
+    label { display: block; font-weight: 600; color: #334155; margin-bottom: 6px; font-size: 14px; }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 15px;
+      background: #f8fafc;
+      color: #0f172a;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    input:focus { outline: none; border-color: var(--primary); background: #ffffff; }
+    input:invalid { border-color: #fca5a5; }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.93; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .message {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+    }
+    .message.success { display: block; background: #dcfce7; color: #166534; }
+    .message.error { display: block; background: #fee2e2; color: #991b1b; }
+    footer { text-align: center; margin-top: 22px; color: #94a3b8; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <div class="logo">🩺</div>
+      <h1>أطباء طيبة الأمام</h1>
+      <p class="subtitle">منصة جمع بيانات الأطباء</p>
+    </header>
+
+    <form id="doctorForm">
+      <div class="field">
+        <label for="name">👨‍⚕️ الاسم</label>
+        <input id="name" type="text" required placeholder="اسم الطبيب الكامل">
+      </div>
+      <div class="field">
+        <label for="specialty">🩺 الاختصاص</label>
+        <input id="specialty" type="text" required placeholder="مثال: باطنية، أطفال، جراحة...">
+      </div>
+      <div class="field">
+        <label for="location">📍 الموقع</label>
+        <input id="location" type="text" placeholder="المدينة / العنوان">
+      </div>
+      <div class="field">
+        <label for="work_days">📅 أيام الدوام</label>
+        <input id="work_days" type="text" placeholder="مثال: السبت – الأربعاء">
+      </div>
+      <div class="field">
+        <label for="work_hours">🕐 أوقات الدوام</label>
+        <input id="work_hours" type="text" placeholder="مثال: 9 صباحاً – 5 مساءً">
+      </div>
+      <div class="field">
+        <label for="day_off">🚫 يوم العطلة</label>
+        <input id="day_off" type="text" placeholder="مثال: الجمعة">
+      </div>
+      <div class="field">
+        <label for="phone">📞 رقم التواصل</label>
+        <input id="phone" type="tel" required placeholder="مثال: 07XXXXXXXXX">
+      </div>
+
+      <button type="submit" id="submitBtn">إرسال البيانات</button>
+      <div id="message" class="message"></div>
+    </form>
+
+    <footer>تُحفظ البيانات بأمان في قاعدة بيانات Supabase للاستخدام لاحقاً</footer>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://evsgwfaknurusycldiox.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2c2d3ZmFrbnVydXN5Y2xkaW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwNTA2MjYsImV4cCI6MjEwNDYyNjYyNn0.C9epPIPIvnOd9QhXTPrVkjDW-CWA1QgHkTzT43P3pew";
+
+    const form = document.getElementById("doctorForm");
+    const btn = document.getElementById("submitBtn");
+    const msg = document.getElementById("message");
+
+    function showMessage(text, type) {
+      msg.textContent = text;
+      msg.className = "message " + type;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = "جاري الإرسال...";
+      msg.className = "message";
+
+      const data = {
+        name: document.getElementById("name").value.trim(),
+        specialty: document.getElementById("specialty").value.trim(),
+        location: document.getElementById("location").value.trim(),
+        work_days: document.getElementById("work_days").value.trim(),
+        work_hours: document.getElementById("work_hours").value.trim(),
+        day_off: document.getElementById("day_off").value.trim(),
+        phone: document.getElementById("phone").value.trim()
+      };
+
+      try {
+        const res = await fetch(SUPABASE_URL + "/rest/v1/doctors", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          showMessage("✅ تم إرسال البيانات بنجاح، شكراً لك!", "success");
+          form.reset();
+        } else {
+          const errText = await res.text();
+          console.error("Supabase error:", errText);
+          showMessage("❌ حدث خطأ أثناء الإرسال، حاول مرة أخرى.", "error");
+        }
+      } catch (err) {
+        console.error(err);
+        showMessage("❌ تعذّر الاتصال بالخادم، تحقق من اتصالك بالإنترنت.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "إرسال البيانات";
+      }
+    });
+  </script>
+</body>
+</html>
